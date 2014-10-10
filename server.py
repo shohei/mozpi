@@ -6,6 +6,14 @@ import threading
 from ws4py.client.tornadoclient import TornadoWebSocketClient
 
 port = 9090
+clients = []
+
+def send_to_all_clients(msg):
+    try:
+        for client in clients:
+            client.write_message(msg)
+    except:
+        pass
 
 class MainHandler(tornado.web.RequestHandler):
   def get(self):
@@ -14,7 +22,8 @@ class MainHandler(tornado.web.RequestHandler):
 
 class HelloHandler(tornado.web.RequestHandler):
   def get(self):
-    ws = MyClient("ws://localhost:9090/ws",protocols=['chat','http-only'],message=m)
+    print "Button hit!"
+    ws = MyClient("ws://localhost:9090/ws",protocols=['chat','http-only'],message="testmessage")
     ws.connect()
 
 class MyClient(TornadoWebSocketClient):
@@ -35,29 +44,22 @@ class MyClient(TornadoWebSocketClient):
 class WSHandler(tornado.websocket.WebSocketHandler):
   def open(self):
     print 'connection opened...'
-    #self.write_message("The server says: 'Hello'. Connection was accepted.")
-    #t=threading.Thread(target=self.hello)
-    #t.start()
+    clients.append(self)
 
   def on_message(self, message):
-    self.write_message(message)
+    #self.write_message(message)
+    send_to_all_clients(message)
     print 'received and echoing:', message
 
   def on_close(self):
     print 'connection closed...'
-
-  #debug method
-  def hello(self):
-    print "hello"
-    self.write_message("hello")
-    t=threading.Timer(3,self.hello)
-    t.start()
+    clients.remove(self)
 
 application = tornado.web.Application([
   (r'/ws', WSHandler),
   (r'/', MainHandler),
   (r'/hello', HelloHandler),
-  (r"/(.*)", tornado.web.StaticFileHandler, {"path": "./resources"}),
+  (r"/(.*)", tornado.web.StaticFileHandler, {"path": "./"}),
 ])
 
 if __name__ == "__main__":
