@@ -23,7 +23,7 @@ class MainHandler(tornado.web.RequestHandler):
 class HelloHandler(tornado.web.RequestHandler):
   def get(self):
     print "Button hit!"
-    ws = MyClient("ws://localhost:9090/ws",protocols=['chat','http-only'],message="testmessage")
+    ws = MyClient("ws://localhost:9090/ws",protocols=['chat','http-only'],message="I'm saying hello.")
     ws.connect()
 
 class MyClient(TornadoWebSocketClient):

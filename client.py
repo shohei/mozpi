@@ -3,6 +3,7 @@ from tornado import ioloop,web
 import time,datetime
 import tornado.websocket
 import tornado.template
+import uuid
 
 port_server = 9090
 port_client = 8888
@@ -22,12 +23,10 @@ class MainHandler(web.RequestHandler):
         ws = MyClient('ws://localhost:'+str(port_server)+'/ws', protocols=['http-only', 'chat'])
         ws.connect()
 
-k=0
 class MyClient(TornadoWebSocketClient):
      def opened(self):
-        global k 
-        self.send("hello "+str(datetime.datetime.now()))
-        k=k+1
+        cid = str(uuid.uuid4())
+        self.send("cid="+cid)
 
      def received_message(self, m): 
         ws2 = MyClient2('ws://localhost:'+str(port_client)+'/ws', protocols=['http-only', 'chat'],message=m)
