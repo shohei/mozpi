@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Control panel</title>
+    <script src="./jquery.min.js"></script>
+    <script>
+      $(function(){
+          $("#hello").click(function(){
+              $.ajax({
+                url: "/hello",
+                type: "GET",
+              });
+          });
+
+      });
+    </script>
+    <style>
+        #hello {
+            height:30px;
+        }
+    </style>
+</head>
+<body>
+    <button id="hello">Say hello</button>
+</body>
+</html>
