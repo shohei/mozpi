@@ -67,6 +67,7 @@ class MyClient2(TornadoWebSocketClient):
         self.send(self.message)
         print "************MyClient2 opened "+str(i)+" times.************"
         i=i+1
+        self.close() #I don't know if this is neccesssary
 
     def received_message(self, m): 
         print OKGREEN+"[MyClient2] received from :8888-> ",
