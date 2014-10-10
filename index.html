@@ -59,6 +59,7 @@ jQuery(function($){
 
       socket.onopen = function(){
         //alert("connection opened....");
+          socket.send("Hi, I'm a browser.");
       }
 
       socket.onmessage = function(msg){

@@ -2,6 +2,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import tornado.template
+import threading
 
 port = 9090
 
@@ -14,6 +15,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
   def open(self):
     print 'connection opened...'
     self.write_message("The server says: 'Hello'. Connection was accepted.")
+    t=threading.Thread(target=self.hello)
+    t.start()
 
   def on_message(self, message):
     self.write_message("The server says: " + message + " back at you")
@@ -21,6 +24,12 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
   def on_close(self):
     print 'connection closed...'
+
+  def hello(self):
+      print "hello"
+      self.write_message("hello")
+      t=threading.Timer(3,self.hello)
+      t.start()
 
 application = tornado.web.Application([
   (r'/ws', WSHandler),

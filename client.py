@@ -17,6 +17,8 @@ clients = []
 def send_to_all_clients(msg):
     try:
         for client in clients:
+            print "writing to ",
+            print str(client)
             client.write_message(msg)
     except:
         print FAIL,
@@ -27,60 +29,75 @@ class MainHandler(web.RequestHandler):
     def get(self):
         loader = tornado.template.Loader(".")
         self.write(loader.load("index.html").generate())
-        print "[Main] open MyClient socket"
+        print "[Main] open MyClient socket ->:9090"
         ws = MyClient('ws://localhost:'+str(port_server)+'/ws', protocols=['http-only', 'chat'])
         ws.connect()
 
+k=0
 class MyClient(TornadoWebSocketClient):
      def opened(self):
+        global k 
+        print "==============MyClient opened "+str(k)+" times.============"
         self.send("hello "+str(datetime.datetime.now()))
+        k=k+1
 
      def received_message(self, m): 
-         print "[MyClient] Received ",
-         print m
-         ws2 = MyClient2('ws://localhost:'+str(port_client)+'/ws', protocols=['http-only', 'chat'],message=m)
-         ws2.connect()
+        print "[MyClient] Received ",
+        print m
+        print "[MyClient] open MyClient2 -> :8888"
+        ws2 = MyClient2('ws://localhost:'+str(port_client)+'/ws', protocols=['http-only', 'chat'],message=m)
+        ws2.connect()
 
      def closed(self, code, reason=None):
-         ioloop.IOLoop.instance().stop()
-         print "[MyClient] close MyClient socket"
+        ioloop.IOLoop.instance().stop()
+        print "[MyClient] close MyClient socket -> :9090"
 
+i=0
+s=0
 class MyClient2(TornadoWebSocketClient):
     def __init__(self,url,protocols=None,extensions=None,io_loop=None,ssl_options=None,headers=None,message=None):
         super(MyClient2,self).__init__(url,protocols=None,extensions=None,io_loop=None,ssl_options=None,headers=None)
         self.message = str(message)
 
     def opened(self):
-        print OKGREEN+"[MyClient2] open socket. Bypass message to our server.",
+        global i
+        print OKGREEN+"[MyClient2] open socket->:8888, ",
+        print str(self),
         print self.message+ENDC
         self.send(self.message)
-        self.close()
-        #self.finish()
+        print "************MyClient2 opened "+str(i)+" times.************"
+        i=i+1
 
     def received_message(self, m): 
-        print OKGREEN+"[MyClient2] received: ",
+        print OKGREEN+"[MyClient2] received from :8888-> ",
         print m+ENDC
 
     def closed(self, code, reason=None):
-        #ioloop.IOLoop.instance().stop()
-        print OKGREEN+"[MyClient2] close MyClient2 socket"+ENDC
+        global s
+        print str(code),reason,
+        print OKGREEN+"[MyClient2] close ->:8888, ",
+        print str(self)+ENDC
+        print "************MyClient2 closed "+str(s)+" times.************"
+        s=s+1
 
+j=0
 class WSHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        print '[WSHandler] connection opened...'
-        self.write_message("The server says: 'Hello'. Connection was accepted.")
+        print '[WSHandler] connection opened... at 8888'
+        #self.write_message("The server says: 'Hello'. Connection was accepted.")
+        print '[WSHandler] appending client'+str(self)
         clients.append(self)
-        self.i = 0
   
     def on_message(self, message):
-        print self.i,
-        print WARNING+'[WSHandler] writing HTML: ', message+ENDC
+        global j
+        print WARNING+str(j)+'[WSHandler] writing HTML to all the clients: ', message+ENDC
+        #self.write_message(message)
         send_to_all_clients(message)
-        self.i=self.i+1
+        j=j+1
   
     def on_close(self):
-        print '[WSHandler] connection closed...'
-  
+        print '[WSHandler] connection closed... :8888'
+        clients.remove(self)
 
 application = web.Application([
         (r"/", MainHandler),
