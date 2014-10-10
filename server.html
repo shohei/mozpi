@@ -13,6 +13,30 @@
               });
           });
 
+          setup();
+
+          function setup(){
+            var host = "ws://localhost:9090/ws";
+            var socket = new WebSocket(host);
+            if(socket){
+                socket.onopen = function(){
+                    socket.send("opening socket in browser.");
+                }
+                socket.onmessage = function(msg){
+                    showServerResponse(msg.data);
+                }
+                socket.onclose = function(){
+                    showServerResponse("The connection closed.");
+                }
+            }
+            
+            function showServerResponse(txt){
+                var p = document.createElement('p');
+                p.innerHTML = txt;
+                document.getElementById('output').appendChild(p);
+            }
+          }
+
       });
     </script>
     <style>
@@ -23,5 +47,6 @@
 </head>
 <body>
     <button id="hello">Say hello</button>
+    <div id="output"></div>
 </body>
 </html>
